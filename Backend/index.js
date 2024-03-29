@@ -3,10 +3,11 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv'
 import cors from 'cors'
 import userModel from './models/User.js'
+import postModel from './models/Post.js'
 
 const app = express();
 app.use(cors());
-app.use(express.json())
+app.use(express.json({ limit: '50mb' }))
 dotenv.config();
 
 const port = process.env.PORT || 4000;
@@ -64,6 +65,24 @@ app.post('/signup', async (req, res) => {
         console.error(error);
         res.status(500).send({ message: 'Internal server error' });
     }
+})
+
+app.post('/newpost', async (req, res) => {
+    try {
+        const newPost = new postModel(req.body);
+        console.log(newPost)
+        await newPost.save();
+        res.send({ message: 'Post shared successfully', alert: true });
+    }
+    catch (error) {
+        console.error(error);
+        res.status(500).send({ message: 'Internal server error' });
+    }
+})
+
+app.get('/home',async(req,res)=>{
+    const data=await postModel.find({});
+    res.send(JSON.stringify(data));
 })
 
 app.listen(port, () => console.log("Example app listening on port " + port));
